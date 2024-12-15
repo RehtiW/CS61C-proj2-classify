@@ -25,16 +25,109 @@
 write_matrix:
 
     # Prologue
+    addi sp,sp,-12
+    sw s0,0(sp)
+    sw s1,4(sp)
+    sw s2,8(sp)
+
+    addi sp,sp,-16
+    sw a1,0(sp)
+    sw a2,4(sp)
+    sw a3,8(sp)
+    sw ra,12(sp)
+    li a1,1     # write only
+    jal fopen
+    li t0,-1
+    beq a0,t0,exception_fopen
+    lw a1,0(sp)
+    lw a2,4(sp)
+    lw a3,8(sp)
+    lw ra,12(sp)
+    addi sp,sp,16
+
+    addi sp,sp,-20
+    sw ra,0(sp)
+    sw a0,4(sp)
+    sw a1,8(sp)
+    sw a2,12(sp)
+    sw a3,16(sp)
+    lw s0,0(a1) # temp
+    sw a2,0(a1)
+    li a2,1
+    li a3,4
+    jal ra, fwrite
+    li a2,1
+    bne a2,a0,exception_fwrite
+    lw ra,0(sp)
+    lw a0,4(sp)
+    lw a1,8(sp)
+    lw a2,12(sp)
+    lw a3,16(sp)
+    addi sp,sp,20
+    sw s0,0(a1) # store back
+
+    addi sp,sp,-20
+    sw ra,0(sp)
+    sw a0,4(sp)
+    sw a1,8(sp)
+    sw a2,12(sp)
+    sw a3,16(sp)
+    lw s0,0(a1) # temp
+    sw a3,0(a1)
+    li a2,1
+    li a3,4
+    jal ra, fwrite
+    li a2,1
+    bne a2,a0,exception_fwrite
+    lw ra,0(sp)
+    lw a0,4(sp)
+    lw a1,8(sp)
+    lw a2,12(sp)
+    lw a3,16(sp)
+    addi sp,sp,20
+    sw s0,0(a1) # store back
+
+    addi sp,sp,-20
+    sw ra,0(sp)
+    sw a0,4(sp)
+    sw a1,8(sp)
+    sw a2,12(sp)
+    sw a3,16(sp)
+    mul a2,a2,a3    # amount to write
+    mv s0,a2
+    li a3,4         # byte size
+    jal ra, fwrite
+    bne s0,a0,exception_fwrite
+    lw ra,0(sp)
+    lw a0,4(sp)
+    lw a1,8(sp)
+    lw a2,12(sp)
+    lw a3,16(sp)
+    addi sp,sp,20
 
 
-
-
-
-
-
-
+    addi sp,sp,-4
+    sw ra,0(sp)
+    jal ra,fclose
+    bne a0,x0,exception_fclose
+    lw ra,0(sp)
+    addi sp,sp,4
 
     # Epilogue
-
+    lw s0,0(sp)
+    lw s1,4(sp)
+    lw s2,8(sp)
+    addi sp,sp,12
 
     jr ra
+
+
+exception_fopen:
+    li a0,27
+    j exit
+exception_fwrite:
+    li a0,30
+    j exit
+exception_fclose:
+    li a0,28
+    j exit
